@@ -13,7 +13,7 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(main src/main.cpp)
+add_executable(main src/main.cpp "src/Particle.h" "src/Print.cpp" "src/Particle.cpp" "src/Solver.h" "src/Solver.cpp" "src/Renderer.h" "src/Renderer.cpp" "src/FixedGrid.h" "src/FixedGrid.cpp")
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE SFML::Graphics)
 
