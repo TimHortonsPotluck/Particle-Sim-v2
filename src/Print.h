@@ -17,6 +17,8 @@ namespace Printing {
 
 	void println(const std::string& x);
 
+	void println(const std::string& x, const double y);
+
 	void println(const std::vector<std::vector<double>>& vec);
 
 	void println(const std::vector<double>& vec, int num_rows, int num_cols);

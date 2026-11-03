@@ -15,8 +15,7 @@ public:
 	
 	void update();
 
-	void setSimUpdateRate(int rate);
-	void setSubStepsCount(int sub_steps);
+	void setSimDT(double dt);
 
 	void setPartVel(size_t index, sf::Vector2<double> v);
 	const sf::Vector2<double>& getPartVel(size_t index);
@@ -25,35 +24,46 @@ public:
 	const sf::Vector2u& getWindowSize() const;
 
 	double getTime() const;
-	double getStepDT() const;
+	double getDT() const;
 	size_t getNumParticles() const;
 
 	double getTotalVelSq() const;
+	double getAvgClosestDist(int grid_cells) const;
 
 	void addGravity();
 	void addLJAcc();
-	void AddLJWallRepellant(double friction_coeff);
+	void addLJWallRepellant();
+	void addLinearDamping();
 
 	void updateObjects(double dt);
 
 	void randomizeParticleVels(double max);
+	
+	void setLJR0(double r0);
+	void setLJDepth(double depth);
+	void setLJCutoff(double cutoff);
+	void setLJWallFriction(double friction);
+	void setLinearDamping(double friction);
 
 private:
-	int sub_steps{ 1 };
 	double time{ 0 };
-	double frame_dt{ 0 };
+	double dt{ 0 };
 
 	sf::Vector2u window_size;
 	std::vector<Particle> particles;
 
 	const sf::Vector2<double> gravity{ 0, .1 };
 
-	const double lj_r0{ 10 };
-	const double lj_depth{ 1 };
-	const double lj_cutoff{ 33 }; // depends on r0 and how much accuracy you want. look at desmos
+	double lj_r0{ 10 };
+	double lj_depth{ 1 };
+	double lj_cutoff{ 33 }; // depends on r0 and how much accuracy you want. look at desmos
 	// look at your desmos graph file under jacksonpi99@gmail.com called "lennard jones in terms of force"
 	// found here hopefully https://www.desmos.com/calculator/nhxygnqf6e
 	// for more info on LJ stuff
+	double lj_wall_friction{ 0 };
+
+	double lin_damp_friction{ 0 };
+	
 
 	FixedGrid fg;
 

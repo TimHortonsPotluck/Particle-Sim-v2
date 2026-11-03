@@ -22,6 +22,10 @@ namespace Printing {
 		std::cout << x << std::endl;
 	}
 
+	void println(const std::string& x, const double y) {
+		std::cout << x << " " << y << std::endl;
+	}
+
 	void println(const std::vector<std::vector<double>>& vec) {
 		for (size_t i{ 0 }; i < vec.size(); ++i) {
 			for (size_t j{ 0 }; j < vec[0].size() - 1; ++j) {
