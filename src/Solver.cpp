@@ -10,12 +10,19 @@ void Solver::addParticle(sf::Vector2<double> pos, double angle, double radius) {
 }
 
 void Solver::update() {
-	time += dt;
 	//auto grid_start = std::chrono::high_resolution_clock::now();
 	fg.clear();
 	for (size_t i{ 0 }; i < particles.size(); ++i) {
 		fg.insert(i, particles[i].getPos());
 	}
+	//if (frame_count % 10 == 0) { // not doing this right now
+	//	fg.clear();
+	//	for (size_t i{ 0 }; i < particles.size(); ++i) {
+	//		fg.insert(i, particles[i].getPos());
+	//	}
+	//	buildVerletList();
+	//}
+
 	//auto grid_end_LJ_start = std::chrono::high_resolution_clock::now();
 	addLJAcc();
 	//auto LJ_end_wall_start = std::chrono::high_resolution_clock::now();
@@ -35,6 +42,8 @@ void Solver::update() {
 	//Printing::println("wall time:", wall_time);
 	//Printing::println("damp time:", damp_time);
 	//Printing::println("update time:", update_time);
+	time += dt;
+	frame_count++;
 }
 
 void Solver::setSimDT(double dt) {
@@ -66,6 +75,10 @@ double Solver::getTime() const {
 
 double Solver::getDT() const {
 	return dt;
+}
+
+int Solver::getFrameCount() const {
+	return frame_count;
 }
 
 size_t Solver::getNumParticles() const {
@@ -119,6 +132,36 @@ void Solver::addGravity() {
 }
 
 void Solver::addLJAcc() {
+	//for (size_t i{ 0 }; i < particles.size(); ++i) { // this is for the verlet list calculation. maybe not doing this for now
+	//	Particle& p1 = particles[i];
+	//	const sf::Vector2<double> p1Pos = p1.getPos();
+	//	for (size_t j : verlet_list[i]) {
+	//		Particle& p2 = particles[j];
+	//		const sf::Vector2<double> disp{ p1Pos - p2.getPos() };
+	//		const double dist_sq{ disp.lengthSquared() };
+	//		if (dist_sq < 1e-12) { // checking if too close
+	//			continue;
+	//		}
+	//		if (dist_sq > lj_cutoff_sq) { // don't do anything if these particles are too far apart
+	//			continue;
+	//		}
+	//		//++interactions;
+	//		const double inv_dist_sq{ 1 / dist_sq };
+	//		//force mag looks like 
+	//		// (12 * lj_depth / dist) * ((lj_r0 / dist)^12 - (lj_r0 / dist)^6)
+	//		// and with direction like
+	//		// (12 * lj_depth * disp / dist_sq) * ((lj_r0 / dist)^12 - (lj_r0 / dist)^6)
+	//		const double ratio_2{ lj_r0_sq * inv_dist_sq };
+	//		const double ratio_6{ ratio_2 * ratio_2 * ratio_2 };
+	//		const double ratio_12{ ratio_6 * ratio_6 };
+	//		const double scale{ lj_depth_12 * (ratio_12 - ratio_6) * inv_dist_sq };
+	//		p1.addAcc(scale * disp); // assuming masses are 1 for now
+	//		p2.addAcc(-scale * disp);
+	//		//auto end = std::chrono::high_resolution_clock::now();
+	//		//time += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+	//	}
+	//}
+	
 	//size_t attempted_interactions{ 0 };
 	//size_t interactions{ 0 };
 	for (size_t i{ 0 }; i < particles.size(); ++i) {

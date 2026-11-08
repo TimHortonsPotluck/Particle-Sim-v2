@@ -25,6 +25,7 @@ public:
 
 	double getTime() const;
 	double getDT() const;
+	int getFrameCount() const;
 	size_t getNumParticles() const;
 
 	double getTotalVelSq() const;
@@ -50,6 +51,7 @@ public:
 private:
 	double time{ 0 };
 	double dt{ 0 };
+	int frame_count{ 0 };
 
 	sf::Vector2u window_size;
 	std::vector<Particle> particles;

@@ -75,7 +75,7 @@ int main() {
 	const double lj_depth = 2;
 	const double lj_cutoff = 17; // check solver.h for more on these
 
-	Solver solver{ window.getSize(), lj_cutoff }; // the grid size should be at least the LJ cutoff
+	Solver solver{ window.getSize(), lj_cutoff}; // the grid size should be at least the LJ cutoff
 	solver.setSimDT(sim_dt);
 	solver.setLJR0(lj_r0);
 	solver.setLJDepth(lj_depth);
@@ -96,9 +96,9 @@ int main() {
 	//	}
 	//}
 	//fillWithParticlesSquare(solver, 10000, particle_radius);
-	//fillWithParticlesFull(solver, 10000, particle_radius);
-	makeParticleTriagularPacking(solver, 10, 10, 10000, 5, particle_radius, 0);
-	//solver.randomizeParticleVels(5);
+	fillWithParticlesFull(solver, 10000, particle_radius);
+	//makeParticleTriagularPacking(solver, 10, 10, 10000, 5, particle_radius, 0);
+	solver.randomizeParticleVels(5);
 
 	auto start_frame_time = std::chrono::high_resolution_clock::now();
 	auto end_frame_time = std::chrono::high_resolution_clock::now();
