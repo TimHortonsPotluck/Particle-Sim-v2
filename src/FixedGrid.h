@@ -19,6 +19,8 @@ public:
 	bool isValidCell(int x, int y) const;
 	sf::Vector2u getGridSize() const;
 
+	double getCellSize();
+
 private:
 	int cols;
 	int rows;

@@ -270,9 +270,32 @@ void Solver::setLinearDamping(double friction) {
 void Solver::buildVerletList() {
 	verlet_list.clear();
 	verlet_list.resize(particles.size());
-	const double neighbor_radius = lj_cutoff + verlet_skin;
+	const double neighbor_radius = fg.getCellSize() + verlet_skin;
 	const double neighbor_radius_sq = neighbor_radius * neighbor_radius;
+	const int cell_search_radius = static_cast<int>(std::ceil(neighbor_radius / fg.getCellSize()));
 
+	for (size_t i{ 0 }; i < particles.size(); ++i) {
+		const sf::Vector2<double> pos_i = particles[i].getPos();
+		const sf::Vector2u grid_pos = fg.getGridLocAtPos(pos_i);
+		for (int dx = -cell_search_radius; dx <= cell_search_radius; dx++) {
+			for (int dy = -cell_search_radius; dy <= cell_search_radius; dy++) {
+				if (!fg.isValidCell(grid_pos.x + dx, grid_pos.y + dy)) {
+					continue;
+				}
 
+				const std::vector<size_t>& cell = fg.getCellContent(grid_pos.x + dx, grid_pos.y + dy);
+				for (size_t j : cell) {
+					if (j <= i) {
+						continue;
+					}
+					const sf::Vector2<double> disp{ particles[j].getPos() - pos_i };
+					const double dist_sq{ disp.lengthSquared() };
+					if (dist_sq < neighbor_radius_sq) {
+						verlet_list[i].push_back(j);
+					}
+				}
+			}
+		}
+	}
 }
 

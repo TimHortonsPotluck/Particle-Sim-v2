@@ -81,7 +81,7 @@ int main() {
 	solver.setLJDepth(lj_depth);
 	solver.setLJCutoff(lj_cutoff);
 	solver.setLJWallFriction(0);
-	solver.setLinearDamping(.001);
+	//solver.setLinearDamping(.001);
 
 	Renderer renderer{ window };
 
@@ -96,12 +96,9 @@ int main() {
 	//	}
 	//}
 	//fillWithParticlesSquare(solver, 10000, particle_radius);
-	fillWithParticlesFull(solver, 10000, particle_radius);
-	//makeParticleTriagularPacking(solver, 10, 10, 10000, 5, particle_radius, 0);
-	//makeParticleTriagularPacking(solver, 50, 50, 500, 10, particle_radius, 0);
-	//makeParticleTriagularPacking(solver, 420, 50, 500, 10, particle_radius, 45);
-	//makeParticleTriagularPacking(solver, 350, 270, 500, 10, particle_radius, 95);
-	solver.randomizeParticleVels(5);
+	//fillWithParticlesFull(solver, 10000, particle_radius);
+	makeParticleTriagularPacking(solver, 10, 10, 10000, 5, particle_radius, 0);
+	//solver.randomizeParticleVels(5);
 
 	auto start_frame_time = std::chrono::high_resolution_clock::now();
 	auto end_frame_time = std::chrono::high_resolution_clock::now();

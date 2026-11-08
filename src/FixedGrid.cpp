@@ -80,3 +80,7 @@ bool FixedGrid::isValidCell(int x, int y) const {
 sf::Vector2u FixedGrid::getGridSize() const {
 	return sf::Vector2u(cols, rows);
 }
+
+double FixedGrid::getCellSize() {
+	return cell_size;
+}
