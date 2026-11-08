@@ -45,6 +45,8 @@ public:
 	void setLJWallFriction(double friction);
 	void setLinearDamping(double friction);
 
+	void buildVerletList();
+
 private:
 	double time{ 0 };
 	double dt{ 0 };
@@ -65,6 +67,12 @@ private:
 	double lin_damp_friction{ 0 };
 	
 
+	double lj_r0_sq{ 10 * 10 };
+	double lj_depth_12{ 12 * 1 };
+	double lj_cutoff_sq{ 33 * 33 };
+
 	FixedGrid fg;
+	std::vector<std::vector<size_t>> verlet_list;
+	double verlet_skin{ 5 };
 
 };

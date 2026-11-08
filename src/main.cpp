@@ -36,7 +36,7 @@ void fillWithParticlesFull(Solver& solver, int num, double radius) {
 	const double area_per_particle = len_x * len_y / num;
 	const double space_per_particle = std::sqrt(area_per_particle);
 	const double particles_per_row = len_x / space_per_particle;
-	println(space_per_particle);
+	//println(space_per_particle);
 	for (int i = 0; i < num; i++) {
 		solver.addParticle(
 			sf::Vector2<double>{
@@ -70,10 +70,10 @@ int main() {
 	sf::RenderWindow window( sf::VideoMode( { width, height } ), "Better Particles", sf::Style::Default, sf::State::Windowed, settings);
 
 	const double sim_dt = .01;
-	const double particle_radius = 10; // just for drawing purposes, probably want same as lj_r0
-	const double lj_r0 = 10;
-	const double lj_depth = 1;
-	const double lj_cutoff = 33; // check solver.h for more on these
+	const double particle_radius = 5; // just for drawing purposes, probably want same as lj_r0
+	const double lj_r0 = 5;
+	const double lj_depth = 2;
+	const double lj_cutoff = 17; // check solver.h for more on these
 
 	Solver solver{ window.getSize(), lj_cutoff }; // the grid size should be at least the LJ cutoff
 	solver.setSimDT(sim_dt);
@@ -95,12 +95,13 @@ int main() {
 	//		solver.addParticle(sf::Vector2<double>{width * .5 - 75.*2 + 15. * i, height * .5 - 75.*2 + 15. * j}, 0, 10);
 	//	}
 	//}
-	//fillWithParticlesSquare(solver, 1000, particle_radius);
-	//fillWithParticlesFull(solver, 10000, particle_radius);
-	makeParticleTriagularPacking(solver, 50, 50, 500, 10, particle_radius, 0);
-	makeParticleTriagularPacking(solver, 420, 50, 500, 10, particle_radius, 45);
-	makeParticleTriagularPacking(solver, 350, 270, 500, 10, particle_radius, 95);
-	solver.randomizeParticleVels(1);
+	//fillWithParticlesSquare(solver, 10000, particle_radius);
+	fillWithParticlesFull(solver, 10000, particle_radius);
+	//makeParticleTriagularPacking(solver, 10, 10, 10000, 5, particle_radius, 0);
+	//makeParticleTriagularPacking(solver, 50, 50, 500, 10, particle_radius, 0);
+	//makeParticleTriagularPacking(solver, 420, 50, 500, 10, particle_radius, 45);
+	//makeParticleTriagularPacking(solver, 350, 270, 500, 10, particle_radius, 95);
+	solver.randomizeParticleVels(5);
 
 	auto start_frame_time = std::chrono::high_resolution_clock::now();
 	auto end_frame_time = std::chrono::high_resolution_clock::now();
@@ -116,12 +117,12 @@ int main() {
 			if ( event->is<sf::Event::Closed>() )
 				window.close();
 			if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>()) {
-				if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
+				if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
 					sf::Vector2<double> localPosition = static_cast<sf::Vector2<double>>(sf::Mouse::getPosition(window));
 					solver.addParticle(localPosition, 0, particle_radius);
 					solver.setPartVel(solver.getNumParticles()-1, { 50, 0 });
 				}
-				if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
+				if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
 					sf::Vector2<double> localPosition = static_cast<sf::Vector2<double>>(sf::Mouse::getPosition(window));
 					solver.addParticle(localPosition, 0, particle_radius);
 				}
@@ -143,7 +144,7 @@ int main() {
 		if (frame % frame_avg == 0) {
 			println("avg millis:", milli_accu / frame_avg);
 			milli_accu = 0;
-			println("mean vel sq:", solver.getTotalVelSq() / solver.getNumParticles());
+			//println("mean vel sq:", solver.getTotalVelSq() / solver.getNumParticles());
 			//println("avg closest dist:", solver.getAvgClosestDist(1));
 		}
 		//println(solver.getPartVel(0));

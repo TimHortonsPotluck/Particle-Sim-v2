@@ -1,3 +1,4 @@
+#include <chrono>
 #include "Solver.h"
 
 #include "Print.h"
@@ -10,14 +11,30 @@ void Solver::addParticle(sf::Vector2<double> pos, double angle, double radius) {
 
 void Solver::update() {
 	time += dt;
+	//auto grid_start = std::chrono::high_resolution_clock::now();
 	fg.clear();
 	for (size_t i{ 0 }; i < particles.size(); ++i) {
 		fg.insert(i, particles[i].getPos());
 	}
+	//auto grid_end_LJ_start = std::chrono::high_resolution_clock::now();
 	addLJAcc();
+	//auto LJ_end_wall_start = std::chrono::high_resolution_clock::now();
 	addLJWallRepellant();
+	//auto wall_end_damp_start = std::chrono::high_resolution_clock::now();
 	addLinearDamping();
+	//auto damp_end_update_start = std::chrono::high_resolution_clock::now();
 	updateObjects(getDT());
+	//auto update_end = std::chrono::high_resolution_clock::now();
+	//double grid_time = std::chrono::duration_cast<std::chrono::microseconds>(grid_end_LJ_start - grid_start).count();
+	//double LJ_time = std::chrono::duration_cast<std::chrono::microseconds>(LJ_end_wall_start - grid_end_LJ_start).count();
+	//double wall_time = std::chrono::duration_cast<std::chrono::microseconds>(wall_end_damp_start - LJ_end_wall_start).count();
+	//double damp_time = std::chrono::duration_cast<std::chrono::microseconds>(damp_end_update_start - wall_end_damp_start).count();
+	//double update_time = std::chrono::duration_cast<std::chrono::microseconds>(update_end - damp_end_update_start).count();
+	//Printing::println("grid time:", grid_time);
+	//Printing::println("lj time:", LJ_time);
+	//Printing::println("wall time:", wall_time);
+	//Printing::println("damp time:", damp_time);
+	//Printing::println("update time:", update_time);
 }
 
 void Solver::setSimDT(double dt) {
@@ -102,6 +119,8 @@ void Solver::addGravity() {
 }
 
 void Solver::addLJAcc() {
+	//size_t attempted_interactions{ 0 };
+	//size_t interactions{ 0 };
 	for (size_t i{ 0 }; i < particles.size(); ++i) {
 		Particle& p1 = particles[i];
 		const sf::Vector2<double> p1Pos = p1.getPos();
@@ -116,33 +135,42 @@ void Solver::addLJAcc() {
 					if (j <= i) {
 						continue;
 					}
+					//auto start = std::chrono::high_resolution_clock::now();
 					Particle& p2 = particles[j];
-
+					//++attempted_interactions;
 					const sf::Vector2<double> disp{ p1Pos - p2.getPos() };
 					const double dist_sq{ disp.lengthSquared() };
 					if (dist_sq < 1e-12) { // checking if too close
 						continue;
 					}
-					if (dist_sq > lj_cutoff * lj_cutoff) { // don't do anything if these particles are too far apart
+					if (dist_sq > lj_cutoff_sq) { // don't do anything if these particles are too far apart
 						continue;
 					}
+					//++interactions;
+					const double inv_dist_sq{ 1 / dist_sq };
 
 					//force mag looks like 
 					// (12 * lj_depth / dist) * ((lj_r0 / dist)^12 - (lj_r0 / dist)^6)
 					// and with direction like
 					// (12 * lj_depth * disp / dist_sq) * ((lj_r0 / dist)^12 - (lj_r0 / dist)^6)
 
-					const double ratio_2{ lj_r0 * lj_r0 / dist_sq };
+					const double ratio_2{ lj_r0_sq * inv_dist_sq };
 					const double ratio_6{ ratio_2 * ratio_2 * ratio_2 };
 					const double ratio_12{ ratio_6 * ratio_6 };
 
-					const sf::Vector2<double> force{ (12. * lj_depth) * (ratio_12 - ratio_6) * (disp / dist_sq) };
-					p1.addAcc(force); // assuming masses are 1 for now
-					p2.addAcc(-force);
+					const double scale{ lj_depth_12 * (ratio_12 - ratio_6) * inv_dist_sq };
+
+					p1.addAcc(scale * disp); // assuming masses are 1 for now
+					p2.addAcc(-scale * disp);
+					//auto end = std::chrono::high_resolution_clock::now();
+					//time += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 				}
 			}
 		}
 	}
+	//Printing::println("attempted interactions:", attempted_interactions);
+	//Printing::println("interactions:", interactions);
+	//Printing::println(time / 1000000);
 }
 
 void Solver::addLinearDamping() { // linear
@@ -163,17 +191,18 @@ void Solver::addLJWallRepellant() {
 	// both should be either x or y, can't be mixed
 	auto calcForceMag = [&](double p_pos, double wall_pos, double p_vel) {
 		const double dist_sq{ (p_pos - wall_pos) * (p_pos - wall_pos) };
-		if (dist_sq > lj_cutoff * lj_cutoff) {
+		if (dist_sq > lj_cutoff_sq) {
 			return 0.;
 		}
+		const double inv_dist_sq{1 / dist_sq};
 		//force mag looks like 
 		// (12 * lj_depth / dist) * (lj_r0 / dist)^12
 		// and with direction like
 		// (12 * lj_depth * disp / dist_sq) * (lj_r0 / dist)^12)
-		const double ratio_2{ lj_r0 * lj_r0 / dist_sq };
+		const double ratio_2{ lj_r0_sq * inv_dist_sq };
 		const double ratio_6{ ratio_2 * ratio_2 * ratio_2 };
 		const double ratio_12{ ratio_6 * ratio_6 };
-		return ratio_12 * ((12. * lj_depth) * ((p_pos - wall_pos) / dist_sq) - p_vel * lj_wall_friction); // force mag
+		return ratio_12 * (lj_depth_12 * ((p_pos - wall_pos) * inv_dist_sq) - p_vel * lj_wall_friction); // force mag
 	};
 
 	auto applyToBoundaryCell = [&](int col, int row, bool force_dir_x, double wall_pos) {
@@ -217,14 +246,17 @@ void Solver::randomizeParticleVels(double max) {
 
 void Solver::setLJR0(double r0) {
 	lj_r0 = r0;
+	lj_r0_sq = r0 * r0;
 }
 
 void Solver::setLJDepth(double depth) {
 	lj_depth = depth;
+	lj_depth_12 = 12. * depth;
 }
 
 void Solver::setLJCutoff(double cutoff) {
 	lj_cutoff = cutoff;
+	lj_cutoff_sq = cutoff * cutoff;
 }
 
 void Solver::setLJWallFriction(double friction) {
@@ -233,5 +265,14 @@ void Solver::setLJWallFriction(double friction) {
 
 void Solver::setLinearDamping(double friction) {
 	lin_damp_friction = friction;
+}
+
+void Solver::buildVerletList() {
+	verlet_list.clear();
+	verlet_list.resize(particles.size());
+	const double neighbor_radius = lj_cutoff + verlet_skin;
+	const double neighbor_radius_sq = neighbor_radius * neighbor_radius;
+
+
 }
 
